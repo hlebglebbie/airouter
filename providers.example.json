@@ -1,0 +1,13 @@
+{
+  "fast_override": null,
+  "think_override": null,
+  "providers": [
+    {
+      "id": "p1",
+      "name": "example",
+      "base_url": "https://api.example.com/v1",
+      "api_key": "sk-...",
+      "model_override": null
+    }
+  ]
+}

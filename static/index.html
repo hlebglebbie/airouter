@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Router</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <h1>AI Router</h1>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Дашборд</button>
+      <button class="tab-btn" data-tab="apis">API</button>
+    </nav>
+    <div class="global" id="global">
+      <span class="dot gray" id="global-dot"></span>
+      <span id="global-text">—</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ DASHBOARD ============ -->
+    <section class="tab active" id="tab-dashboard">
+      <div class="routing">
+        <div class="card route">
+          <h2>⚡ FAST <span class="sub">самая быстрая генерация</span></h2>
+          <select id="fast-select" class="route-select" title="Выбор модели"></select>
+          <div class="route-body" id="fast-body">нет данных — запустите проверку</div>
+        </div>
+        <div class="card route">
+          <h2>🧠 THINK <span class="sub">наибольшее число параметров</span></h2>
+          <select id="think-select" class="route-select" title="Выбор модели"></select>
+          <div class="route-body" id="think-body">нет данных — добавьте API</div>
+        </div>
+      </div>
+
+      <div class="card toolbar">
+        <button class="btn" id="btn-check-all">Проверить все</button>
+        <button class="btn primary" id="btn-benchmark">Бенчмарк скорости</button>
+        <span class="pill" id="bench-status"></span>
+      </div>
+
+      <div class="card">
+        <h2>Провайдеры</h2>
+        <div id="providers" class="providers"></div>
+      </div>
+
+      <div class="card">
+        <h2>Журнал</h2>
+        <ul id="events" class="events"></ul>
+      </div>
+    </section>
+
+    <!-- ============ APIS ============ -->
+    <section class="tab" id="tab-apis">
+      <div class="card">
+        <h2>Добавить API</h2>
+        <form id="add-form" class="add-form">
+          <label>Название
+            <input id="in-name" type="text" placeholder="Например: OpenRouter ключ 1" autocomplete="off" />
+          </label>
+          <label>Base URL
+            <input id="in-base" type="text" placeholder="https://api.openai.com/v1" autocomplete="off" />
+          </label>
+          <label>API ключ
+            <input id="in-key" type="password" placeholder="sk-…" autocomplete="off" />
+          </label>
+          <label>Модель, если /models недоступен (необязательно)
+            <input id="in-model" type="text" placeholder="например gpt-4o-mini" autocomplete="off" />
+          </label>
+          <button class="btn primary" type="submit">Добавить</button>
+        </form>
+        <p class="hint">Можно добавить несколько ключей одного сервиса — каждый ключ отдельной записью. Роутер сам переключится на рабочий.</p>
+        <p class="error" id="add-error"></p>
+      </div>
+
+      <div class="card">
+        <h2>Как это работает</h2>
+        <ul class="help">
+          <li>Endpoint: <code>POST http://localhost:5959/v1/chat/completions</code> — модели <code>fast</code> и <code>think</code>.</li>
+          <li><code>fast</code> → модель с самым быстрым ответом (замер по одному слову).</li>
+          <li><code>think</code> → модель с наибольшим числом параметров (оценка по имени).</li>
+          <li>При сбое API запрос автоматически уходит на следующий рабочий; ожившие API возвращаются в ротацию.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <div id="edit-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Редактировать API</h2>
+      <form id="edit-form" class="add-form">
+        <label>Название
+          <input id="edit-name" type="text" autocomplete="off" />
+        </label>
+        <label>Base URL
+          <input id="edit-base" type="text" autocomplete="off" />
+        </label>
+        <label>API ключ (оставьте пустым — не менять)
+          <input id="edit-key" type="password" placeholder="оставьте пустым — не менять" autocomplete="off" />
+        </label>
+        <label>Модель, если /models недоступен (необязательно)
+          <input id="edit-model" type="text" placeholder="необязательно" autocomplete="off" />
+        </label>
+        <div class="modal-actions">
+          <button class="btn primary" type="submit">Сохранить</button>
+          <button class="btn" type="button" id="edit-cancel">Отмена</button>
+        </div>
+        <p class="error" id="edit-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

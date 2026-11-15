@@ -1,0 +1,7 @@
+/target
+/providers.json
+/.mimocode
+.env
+.env.*
+*.log
+.DS_Store
