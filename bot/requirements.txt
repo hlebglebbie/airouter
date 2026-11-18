@@ -1,0 +1,8 @@
+aiogram>=3.7,<4
+aiohttp>=3.9
+
+# Прокси для обращений к Telegram API.
+# aiohttp-socks — коннектор прокси, который использует aiogram.AiohttpSession.
+# free-proxy[async] — AsyncFreeProxy, списки с free-proxy-list.net.
+aiohttp-socks>=0.8.4
+free-proxy[async]>=1.3.1

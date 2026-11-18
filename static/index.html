@@ -58,6 +58,21 @@
     <!-- ============ APIS ============ -->
     <section class="tab" id="tab-apis">
       <div class="card">
+        <h2>Telegram-бот</h2>
+        <form id="tg-form" class="add-form">
+          <label>Токен бота (от @BotFather)
+            <input id="in-tg-token" type="password" placeholder="123456789:AAH…" autocomplete="off" />
+          </label>
+          <div class="tg-actions">
+            <button class="btn primary" type="submit">Сохранить</button>
+            <button class="btn" type="button" id="btn-tg-clear">Отключить</button>
+          </div>
+        </form>
+        <p class="hint" id="tg-hint">—</p>
+        <p class="error" id="tg-error"></p>
+      </div>
+
+      <div class="card">
         <h2>Добавить API</h2>
         <form id="add-form" class="add-form">
           <label>Название

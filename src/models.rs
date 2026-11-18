@@ -58,6 +58,12 @@ pub struct RoutingUpdateRequest {
     pub think: Option<String>,
 }
 
+/// Configures the Telegram bot token. Empty string clears the configuration.
+#[derive(Debug, Deserialize)]
+pub struct TelegramUpdateRequest {
+    pub token: String,
+}
+
 // ---------- internal state types (also serialized into /api/state) ----------
 
 #[derive(Clone, Debug)]
@@ -124,6 +130,12 @@ pub struct EventDto {
 }
 
 #[derive(Debug, Serialize)]
+pub struct TelegramDto {
+    pub configured: bool,
+    pub token_masked: String,
+}
+
+#[derive(Debug, Serialize)]
 pub struct StateDto {
     pub benchmark_running: bool,
     pub routing_fast: Option<RouteTargetDto>,
@@ -133,6 +145,7 @@ pub struct StateDto {
     pub candidates: Vec<String>,
     pub providers: Vec<ProviderDto>,
     pub events: Vec<EventDto>,
+    pub telegram: TelegramDto,
 }
 
 /// Masks an API key for display: `sk-…abcd`.
@@ -143,4 +156,24 @@ pub fn mask_key(key: &str) -> String {
     let prefix = if key.len() >= 3 { &key[..3] } else { key };
     let tail: String = key.chars().rev().take(4).collect::<String>().chars().rev().collect();
     format!("{prefix}…{tail}")
+}
+
+/// Masks a Telegram bot token for display: `123456789:…abcd` (keeps the bot
+/// id visible, hides the secret part).
+pub fn mask_telegram_token(token: &str) -> String {
+    match token.find(':') {
+        Some(i) => {
+            let (id, secret) = (&token[..i], &token[i + 1..]);
+            let tail: String = secret
+                .chars()
+                .rev()
+                .take(4)
+                .collect::<String>()
+                .chars()
+                .rev()
+                .collect();
+            format!("{id}:…{tail}")
+        }
+        None => mask_key(token),
+    }
 }

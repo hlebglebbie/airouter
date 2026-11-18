@@ -7,7 +7,10 @@ use axum::Json;
 use serde_json::json;
 
 use crate::benchmark;
-use crate::models::{AddProviderRequest, RoutingUpdateRequest, StateDto, UpdateProviderRequest};
+use crate::models::{
+    AddProviderRequest, RoutingUpdateRequest, StateDto, TelegramUpdateRequest,
+    UpdateProviderRequest,
+};
 use crate::state::{AppState, Provider};
 use crate::models::Status;
 
@@ -166,6 +169,41 @@ pub async fn update_routing(
         .push_event("routing", "изменён выбор моделей (fast/think)".to_string())
         .await;
     (StatusCode::OK, Json(json!({ "ok": true }))).into_response()
+}
+
+/// Returns the raw Telegram bot token for the aiogram sidecar (localhost only).
+pub async fn get_telegram_token(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let token = state.tg_token.read().await.clone().unwrap_or_default();
+    Json(json!({ "token": token }))
+}
+
+/// Sets or clears the Telegram bot token. The aiogram sidecar polls
+/// `/api/telegram/token` and reconnects when this value changes.
+pub async fn update_telegram(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<TelegramUpdateRequest>,
+) -> Response {
+    let token = req.token.trim().to_string();
+    let configured = !token.is_empty();
+
+    *state.tg_token.write().await = if configured {
+        Some(token)
+    } else {
+        None
+    };
+    state.save().await;
+
+    if configured {
+        state
+            .push_event("telegram", "Telegram-бот обновлён".to_string())
+            .await;
+    } else {
+        state
+            .push_event("telegram", "Telegram-бот отключён".to_string())
+            .await;
+    }
+
+    (StatusCode::OK, Json(json!({ "configured": configured }))).into_response()
 }
 
 fn clean_override(v: Option<String>) -> Option<String> {

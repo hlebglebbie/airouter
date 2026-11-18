@@ -31,6 +31,7 @@ async fn main() {
     let persisted_count = persisted.providers.len();
     *state.fast_override.write().await = persisted.fast_override;
     *state.think_override.write().await = persisted.think_override;
+    *state.tg_token.write().await = persisted.tg_token;
     let ids: Vec<String> = persisted.providers.iter().map(|p| p.id.clone()).collect();
     for p in persisted.providers {
         let provider = crate::state::Provider::new(
@@ -70,6 +71,8 @@ async fn main() {
         .route("/api/check_all", post(admin::check_all_handler))
         .route("/api/benchmark", post(admin::benchmark_handler))
         .route("/api/routing", put(admin::update_routing))
+        .route("/api/telegram", put(admin::update_telegram))
+        .route("/api/telegram/token", get(admin::get_telegram_token))
         .fallback(static_files::not_found)
         .with_state(state);
 

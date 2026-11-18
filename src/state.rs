@@ -7,8 +7,8 @@ use tokio::sync::RwLock;
 
 use crate::intel;
 use crate::models::{
-    mask_key, Event, EventDto, ModelInfo, ProviderDto, RouteTarget, RouteTargetDto, StateDto,
-    Status, VirtualModel,
+    mask_key, mask_telegram_token, Event, EventDto, ModelInfo, ProviderDto, RouteTarget,
+    RouteTargetDto, StateDto, Status, TelegramDto, VirtualModel,
 };
 
 pub const EVENT_CAP: usize = 100;
@@ -34,6 +34,8 @@ pub struct PersistFile {
     pub fast_override: Option<String>,
     #[serde(default)]
     pub think_override: Option<String>,
+    #[serde(default)]
+    pub tg_token: Option<String>,
     #[serde(default)]
     pub providers: Vec<PersistedProvider>,
 }
@@ -101,6 +103,7 @@ pub struct AppState {
     pub benchmark_running: AtomicBool,
     pub fast_override: RwLock<Option<String>>,
     pub think_override: RwLock<Option<String>>,
+    pub tg_token: RwLock<Option<String>>,
     pub http: reqwest::Client,
 }
 
@@ -113,6 +116,7 @@ impl AppState {
             benchmark_running: AtomicBool::new(false),
             fast_override: RwLock::new(None),
             think_override: RwLock::new(None),
+            tg_token: RwLock::new(None),
             http,
         }
     }
@@ -133,10 +137,11 @@ impl AppState {
     }
 
     async fn save_to(&self, path: &str) {
-        let (fast_override, think_override) = {
+        let (fast_override, think_override, tg_token) = {
             let f = self.fast_override.read().await;
             let t = self.think_override.read().await;
-            (f.clone(), t.clone())
+            let tg = self.tg_token.read().await;
+            (f.clone(), t.clone(), tg.clone())
         };
 
         let mut providers: Vec<PersistedProvider> = {
@@ -157,6 +162,7 @@ impl AppState {
         let file = PersistFile {
             fast_override,
             think_override,
+            tg_token,
             providers,
         };
 
@@ -183,6 +189,7 @@ impl AppState {
                     PersistFile {
                         fast_override: None,
                         think_override: None,
+                        tg_token: None,
                         providers,
                     }
                 }
@@ -359,6 +366,15 @@ impl AppState {
             })
             .collect();
 
+        let tg_token = self.tg_token.read().await.clone();
+        let telegram = TelegramDto {
+            configured: tg_token.is_some(),
+            token_masked: tg_token
+                .as_deref()
+                .map(mask_telegram_token)
+                .unwrap_or_default(),
+        };
+
         StateDto {
             benchmark_running: self.benchmark_running.load(std::sync::atomic::Ordering::Relaxed),
             routing_fast: fast.map(route_target_dto),
@@ -368,6 +384,7 @@ impl AppState {
             candidates,
             providers: provider_dtos,
             events,
+            telegram,
         }
     }
 }

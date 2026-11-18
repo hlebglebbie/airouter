@@ -178,6 +178,8 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px; }
 }
 .add-form input:focus { outline: none; border-color: var(--accent); }
 
+.tg-actions { display: flex; gap: 8px; }
+
 .hint { color: var(--muted); font-size: 12px; }
 .error { color: var(--red); font-size: 13px; min-height: 18px; }
 

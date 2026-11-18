@@ -36,6 +36,7 @@ function render() {
   renderProviders();
   renderEvents();
   renderBenchStatus();
+  renderTelegram();
 }
 
 function renderGlobal() {
@@ -166,6 +167,17 @@ function renderBenchStatus() {
   $("#bench-status").textContent = state.benchmark_running ? "идёт замер…" : "";
 }
 
+function renderTelegram() {
+  const tg = state.telegram || { configured: false, token_masked: "" };
+  const hint = $("#tg-hint");
+  if (tg.configured) {
+    hint.textContent =
+      `Бот настроен (${tg.token_masked}). Запустите bot/tg_bot.py и отправьте боту сообщение со ссылкой на API и ключом(ами).`;
+  } else {
+    hint.textContent = "Токен не задан — Telegram-бот не запустится.";
+  }
+}
+
 // ---------- actions ----------
 async function addProvider(e) {
   e.preventDefault();
@@ -262,6 +274,37 @@ document.getElementById("btn-benchmark").addEventListener("click", async () => {
 });
 
 document.getElementById("add-form").addEventListener("submit", addProvider);
+
+// ---------- telegram ----------
+async function saveTelegram(token) {
+  $("#tg-error").textContent = "";
+  try {
+    const res = await fetch("/api/telegram", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({}));
+      $("#tg-error").textContent = b.error || "ошибка сохранения";
+      return;
+    }
+    if (!token) $("#in-tg-token").value = "";
+    await loadState();
+  } catch (err) {
+    $("#tg-error").textContent = "сеть: " + err.message;
+  }
+}
+
+document.getElementById("tg-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await saveTelegram($("#in-tg-token").value.trim());
+});
+
+document.getElementById("btn-tg-clear").addEventListener("click", async () => {
+  if (!confirm("Отключить Telegram-бота?")) return;
+  await saveTelegram("");
+});
 
 // ---------- edit provider ----------
 function openEdit(id) {
