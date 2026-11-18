@@ -11,9 +11,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from keyparser import looks_like_api, normalize_base, parse, provider_name  # noqa: E402
 
 FAILURES: list[str] = []
+CHECKS = 0
 
 
 def check(name: str, got, want) -> None:
+    global CHECKS
+    CHECKS += 1
     if got != want:
         FAILURES.append(f"{name}\n     got: {got!r}\n    want: {want!r}")
 
@@ -173,11 +176,11 @@ def main() -> int:
     check("normalize пустого", normalize_base("   "), "")
 
     if FAILURES:
-        print(f"ПАДЕНИЕ: {len(FAILURES)}\n")
+        print(f"ПАДЕНИЕ: {len(FAILURES)} из {CHECKS}\n")
         for f in FAILURES:
             print(" ✗ " + f)
         return 1
-    print("все проверки парсера прошли")
+    print(f"все {CHECKS} проверок парсера прошли")
     return 0
 
 

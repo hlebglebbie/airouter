@@ -1,6 +1,7 @@
 {
   "fast_override": null,
   "think_override": null,
+  "tg_token": null,
   "providers": [
     {
       "id": "p1",
